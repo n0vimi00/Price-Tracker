@@ -2,6 +2,7 @@ import { Text, View, Image, StyleSheet, TouchableOpacity } from "react-native";
 import React from 'react';
 import Colors from "../../constants/Colors"; // Import Colors from your Colors file
 import { useRouter } from "expo-router";
+import useProductStore from "../../app/states/store";
 
 // Function to capitalize the first letter of the store name
 const capitalizeFirstLetter = (string) => {
@@ -10,8 +11,7 @@ const capitalizeFirstLetter = (string) => {
 
 export default function ProductListItem({ product }) {
     const router = useRouter();
-
-    console.log('Product before navigation:', product); // Log the product before passing it
+    const { setCurrentProduct } = useProductStore();
 
     // Check if product.stores is defined and is an object
     const storeEntries = product.stores ? Object.entries(product.stores) : [];
@@ -21,10 +21,10 @@ export default function ProductListItem({ product }) {
 
     return (
         <TouchableOpacity
-            onPress={() => router.push({
-                pathname: '/product-details',
-                params: product
-            })}
+        onPress={() => {
+            setCurrentProduct(product); // Set the current product globally
+            router.push('/product-details'); // Navigate to the product details screen
+          }}
             style={styles.container}>
             {/* Image section */}
             <View style={styles.imageContainer}>
@@ -44,13 +44,13 @@ export default function ProductListItem({ product }) {
             <View style={styles.priceContainer}>
                 {sortedStoreEntries.length > 0 ? (
                     sortedStoreEntries.map(([store, price], index) => (
-                        <View key={store} style={styles.priceRow}>
+                        <View key={index} style={styles.priceRow}>
                             <Text style={{
                                 fontSize: 16,
                                 fontFamily: 'outfit',
                                 color: Colors.storeColors[store] || '#000' // Assign color from Colors file
                             }}>
-                                {capitalizeFirstLetter(store)}:  {/* Convert store name to have first letter capitalized */}
+                                {capitalizeFirstLetter(store)}:  
                             </Text>
                             <Text style={{ fontSize: 18, fontFamily: 'outfit', color: '#000' }}>
                                 {`${price}€`}

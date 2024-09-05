@@ -15,8 +15,6 @@ export default function ProductInfo({ product }) {
                 </View>
             </View>
             <View style={styles.detailsContainer}>
-                {/* Add other product details here */}
-                {/* <Text>{product?.prices}</Text> */}
             </View>
         </View>
     );
