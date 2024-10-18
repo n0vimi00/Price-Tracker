@@ -14,8 +14,8 @@ export default function ProductInfo({ product }) {
                     <Text style={styles.productName}>{product?.name}</Text>
                 </View>
             </View>
-            <View style={styles.detailsContainer}>
-            </View>
+            {/* <View style={styles.detailsContainer}>
+            </View> */}
         </View>
     );
 }

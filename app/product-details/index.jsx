@@ -1,24 +1,28 @@
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
 import React, { useEffect } from 'react';
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import ProductInfo from "../../components/Home/ProductDetails/ProductInfo";
 import StoreInfo from "../../components/Home/ProductDetails/StoreInfo";
 import useProductStore from "../states/store";
 
 export default function ProductDetails() {
+  const { currentProduct } = useProductStore();
+  const navigation = useNavigation();
 
-    const { currentProduct } = useProductStore(); // Access the current product globally
-    const navigation = useNavigation();
-  
-    useEffect(() => {
-      navigation.setOptions({
-        headerTransparent: true,
-        headerTitle: '',
-      });
-    }, []);
-  
-    return (
-      <View>
+  useEffect(() => {
+    navigation.setOptions({
+      headerTransparent: true,
+      headerTitle: '',
+    });
+  }, []);
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         {currentProduct ? (
           <>
             <ProductInfo product={currentProduct} />
@@ -27,28 +31,16 @@ export default function ProductDetails() {
         ) : (
           <Text>No product selected</Text>
         )}
-      </View>
-    );
-  }
-    
-//     const product=useLocalSearchParams();
-//     console.log('Product in ProductDetails:', product);
-//     const navigation=useNavigation();
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
 
-//     useEffect(()=>{
-//         navigation.setOptions({
-//             headerTransparent:true,
-//             headerTitle:''
-//         })
-//     },[]);
-
-//     console.log('Product Data in ProductDetails:', product);
-
-//     return (
-//         <View>
-//             <ProductInfo product={product} />
-
-//             <StoreInfo product={product}/>
-//         </View>
-//     )
-// }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+});

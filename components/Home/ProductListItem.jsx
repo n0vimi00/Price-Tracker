@@ -1,5 +1,5 @@
 import { Text, View, Image, StyleSheet, TouchableOpacity } from "react-native";
-import React from 'react';
+import React, { useState } from 'react';
 import Colors from "../../constants/Colors"; // Import Colors from your Colors file
 import { useRouter } from "expo-router";
 import useProductStore from "../../app/states/store";
