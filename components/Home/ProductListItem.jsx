@@ -1,10 +1,10 @@
 import { Text, View, Image, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useState } from 'react';
-import Colors from "../../constants/Colors"; // Import Colors from your Colors file
+import Colors from "../../constants/Colors"; 
 import { useRouter } from "expo-router";
 import useProductStore from "../../app/states/store";
+import placeholderImage from './../../assets/images/placeholder.jpeg'; 
 
-// Function to capitalize the first letter of the store name
 const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 };
@@ -12,6 +12,7 @@ const capitalizeFirstLetter = (string) => {
 export default function ProductListItem({ product }) {
     const router = useRouter();
     const { setCurrentProduct } = useProductStore();
+    const imageSource = product.imageURL ? { uri: product.imageURL } : placeholderImage;
 
     // Check if product.stores is defined and is an object
     const storeEntries = product.stores ? Object.entries(product.stores) : [];
@@ -22,17 +23,14 @@ export default function ProductListItem({ product }) {
     return (
         <TouchableOpacity
         onPress={() => {
-            setCurrentProduct(product); // Set the current product globally
-            router.push('/product-details'); // Navigate to the product details screen
+            setCurrentProduct(product); 
+            router.push('/product-details');
           }}
-            style={styles.container}>
-            {/* Image section */}
+          style={styles.container}
+            >
             <View style={styles.imageContainer}>
-                <Image
-                    source={{ uri: product?.imageURL }}
-                    style={styles.image}
+            <Image source={imageSource} style={styles.image}
                 />
-                {/* Black transparent overlay on top of the image */}
                 <View style={styles.imageOverlay} />
                 {/* Overlay the product name on the bottom-left corner of the image */}
                 <View style={styles.overlay}>
@@ -59,7 +57,7 @@ export default function ProductListItem({ product }) {
                     ))
                 ) : (
                     <Text style={{ fontSize: 16, color: '#000' }}>
-                        No prices available
+                        Ei hintoja saatavilla
                     </Text>
                 )}
             </View>
@@ -72,22 +70,23 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 10,
         margin: 11,
-        overflow: 'hidden', // Ensures the image and text don't overflow the container
+        overflow: 'hidden', 
         width: 165,
-        elevation: 5
+        elevation: 5,
+        flex: 1
     },
     imageContainer: {
-        position: 'relative', // To allow absolute positioning of the overlay
+        position: 'relative', 
         width: '100%',
-        height: 135, // Adjust the height as needed
+        height: 135, 
     },
     image: {
-        width: '100%', // Take up the full width of the container
-        height: '100%', // Ensure the image fills the image container
+        width: '100%', 
+        height: '100%', 
     },
     imageOverlay: {
-        ...StyleSheet.absoluteFillObject, // Fills the entire image
-        backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent black background
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)', 
     },
     overlay: {
         position: 'absolute',
@@ -101,16 +100,18 @@ const styles = StyleSheet.create({
     productName: {
         fontFamily: 'outfit-bold',
         fontSize: 23,
-        color: '#fff', // White text for contrast
+        color: '#fff',
     },
     priceContainer: {
         padding: 10,
         paddingTop: 5,
-    },
+        flex: 1, 
+        },
     priceRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 1
+        padding: 1,
+        
     }
 });
