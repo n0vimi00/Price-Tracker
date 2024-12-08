@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Colors from '../../../constants/Colors';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Picker } from '@react-native-picker/picker';
+import { updateDoc, setDoc, doc, deleteField } from 'firebase/firestore';
+import { db } from '../../../config/FirebaseConfig';
 
 const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -14,11 +17,8 @@ export default function StoreInfo({ product }) {
   const [editedPrices, setEditedPrices] = useState(stores);
   const [newStore, setNewStore] = useState('');
   const [newPrice, setNewPrice] = useState('');
-
-  // State to hold sorted prices
   const [sortedStoreEntries, setSortedStoreEntries] = useState([]);
 
-  // Update sorted store entries whenever editedPrices changes and not in editing mode
   useEffect(() => {
     if (!isEditing) {
       setSortedStoreEntries(
@@ -27,64 +27,87 @@ export default function StoreInfo({ product }) {
     }
   }, [editedPrices, isEditing]);
 
-  // Handle edit button press
-  const toggleEditing = () => {
-    setIsEditing(prev => {
-      // If exiting editing mode, update the sorted store entries
-      if (prev) {
-        setSortedStoreEntries(
-          Object.entries(editedPrices).sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]))
-        );
+  useEffect(() => {
+    const backAction = () => {
+      if (isEditing) {
+        setIsEditing(false);
+        return true;
       }
-      return !prev;
-    });
-  };
+      return false;
+    };
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [isEditing]);
 
-  // Handle price input change
   const handlePriceChange = (store, newPrice) => {
-    setEditedPrices(prevPrices => ({
+    setEditedPrices((prevPrices) => ({
       ...prevPrices,
       [store]: newPrice,
     }));
   };
 
-  // Handle adding a new store
-  const handleAddNewStore = () => {
-    if (!newStore || !newPrice) {
-      Alert.alert("Please enter both store name and price.");
-      return;
-    }
-    setEditedPrices(prevPrices => ({
-      ...prevPrices,
-      [newStore]: newPrice,
-    }));
-    setNewStore('');
-    setNewPrice('');
+  const handleStoreChange = (newStore) => {
+    setNewStore(newStore);
   };
 
-  // Handle removing a store
-  const handleRemoveStore = (store) => {
-    setEditedPrices(prevPrices => {
-      const updatedPrices = { ...prevPrices };
-      delete updatedPrices[store];
-      return updatedPrices;
-    });
-  };
-
-  // Handle back button press to exit edit mode
-  useEffect(() => {
-    const backAction = () => {
-      if (isEditing) {
-        setIsEditing(false); // Exit edit mode
-        return true; // Prevent default back action (exit screen)
+  const toggleEditing = async () => {
+    if (isEditing) {
+      try {
+        const productRef = doc(db, "products", product.id);
+        // Include the new store data if provided
+        let updatedStores = { ...editedPrices };
+        if (newStore && newPrice) {
+          updatedStores[newStore] = newPrice;
+          setNewStore('');
+          setNewPrice('');
+        }
+        await setDoc(productRef, { stores: updatedStores }, { merge: true });
+        // Update the local state with the new data
+        setEditedPrices(updatedStores);
+      } catch (error) {
+        console.error("Error updating store info: ", error);
+        Alert.alert("Virhe", "Tallennus epäonnistui.");
       }
-      return false; // Allow default back action (exit screen)
-    };
+    }
 
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    setIsEditing((prev) => !prev);
+  };
 
-    return () => backHandler.remove();
-  }, [isEditing]);
+
+  const handleRemoveStore = (store) => {
+    Alert.alert(
+      "Poistetaanko kauppa?",
+      "Kauppa ja hinta poistetaan tietokannasta",
+      [
+        {
+          text: "Peruuta",
+        },
+        {
+          text: "Poista",
+          onPress: async () => {
+            try {
+              const productRef = doc(db, "products", product.id);
+              // Remove the store data from the database
+              await updateDoc(productRef, {
+                [`stores.${store}`]: deleteField()
+              });
+              // Update local state to remove the store from the screen
+              setEditedPrices((prevPrices) => {
+                const updatedPrices = { ...prevPrices };
+                delete updatedPrices[store];
+                return updatedPrices;
+              });
+              setIsEditing(false);
+
+            } catch (error) {
+              console.error("Error deleting store data: ", error);
+              Alert.alert("Virhe", "Tietojen poistaminen epäonnistui.");
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -106,7 +129,7 @@ export default function StoreInfo({ product }) {
               <View style={styles.editContainer}>
                 <TextInput
                   style={styles.storePriceInput}
-                  value={String(price)}
+                  value={String(editedPrices[store])}
                   keyboardType="numeric"
                   onChangeText={(newPrice) => handlePriceChange(store, newPrice)}
                 />
@@ -120,28 +143,30 @@ export default function StoreInfo({ product }) {
           </View>
         ))
       ) : (
-        <Text>No prices available</Text>
+        <Text>Ei hintatietoja saatavilla</Text>
       )}
 
       {/* Add new store input fields */}
       {isEditing && (
         <View style={styles.addStoreRow}>
-          <TextInput
-            style={styles.newStoreInput}
-            value={newStore}
-            placeholder="Store Name"
-            onChangeText={setNewStore}
-          />
+          <Picker
+            selectedValue={newStore}
+            onValueChange={handleStoreChange}
+            style={styles.picker}
+          >
+            <Picker.Item label="Valitse kauppa" value="" />
+            <Picker.Item label="Prisma" value="prisma" />
+            <Picker.Item label="K-city" value="k-city" />
+            <Picker.Item label="Lidl" value="lidl" />
+            <Picker.Item label="Tokmanni" value="tokmanni" />
+          </Picker>
           <TextInput
             style={styles.newStoreInput}
             value={newPrice}
-            placeholder="Price"
+            placeholder="Hinta (€)"
             keyboardType="numeric"
             onChangeText={setNewPrice}
           />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddNewStore}>
-            <FontAwesome name="plus" size={30} color="white" />
-          </TouchableOpacity>
         </View>
       )}
 
@@ -172,10 +197,9 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     margin: 10,
   },
-  storePrice: {
-    fontSize: 20,
-    fontFamily: 'outfit-medium',
-    color: '#000',
+  editContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   storePriceInput: {
     fontSize: 20,
@@ -184,14 +208,33 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
     minWidth: 60,
-    textAlign: 'right',
+    textAlign: 'center',
+  },
+  removeButton: {
+    backgroundColor: 'red',
+    padding: 5,
+    borderRadius: 5,
+    borderColor: Colors.secondary,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  storePrice: {
+    fontSize: 20,
+    fontFamily: 'outfit-medium',
+    color: '#000',
   },
   addStoreRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
-    marginTop: 20,
+    marginTop: 10,
+  },
+  picker: {
+    flex: 1,
+    marginRight: 60,
+    minWidth: 70,
   },
   newStoreInput: {
     fontSize: 16,
@@ -200,6 +243,9 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     flex: 1,
     marginHorizontal: 5,
+    maxWidth: 60,
+    textAlign: 'center',
+    marginRight: 40
   },
   buttonRow: {
     flexDirection: 'row',
@@ -216,30 +262,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.secondary,
     borderWidth: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addButton: {
-    backgroundColor: Colors.primary,
-    padding: 10,
-    borderRadius: 5,
-    borderColor: Colors.secondary,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  removeButton: {
-    backgroundColor: 'red',
-    padding: 5,
-    borderRadius: 5,
-    borderColor: Colors.secondary,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  editContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
 });
