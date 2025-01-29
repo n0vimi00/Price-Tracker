@@ -10,6 +10,4 @@ Run the app on an Android device/emulator using 'npx expo run:android'
 
 ## Current Limitations
 
-The app is not yet fully functional; some features are still under development.
-Prices cannot yet be saved or fetched from the database (only local edits are possible).
-User interface is still being polished.
+The app is not yet fully functional; some features are still under development. User interface is still being polished.
