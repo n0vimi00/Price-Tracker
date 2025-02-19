@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, ToastAndroid } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ToastAndroid } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from 'expo-router'
 import { TextInput } from 'react-native';
@@ -39,7 +39,7 @@ export default function AddNewProduct() {
             stores,
             imageURL: image,
         };
-        if (!productName.name) { 
+        if (!productName.name) {
             ToastAndroid.show('Lisää tuotteen nimi', ToastAndroid.SHORT);
             return;
         }
@@ -58,7 +58,7 @@ export default function AddNewProduct() {
         // Transform stores array into a map
         const storesMap = submissionData.stores.reduce((map, store) => {
             if (store.store && store.price) {
-                map[store.store] = parseFloat(store.price); 
+                map[store.store] = parseFloat(store.price);
             }
             return map;
         }, {});
@@ -70,7 +70,7 @@ export default function AddNewProduct() {
             console.log('Data successfully saved to Firestore');
         } catch (error) {
             console.error('Error saving data to Firestore:', error);
-            throw error; 
+            throw error;
         }
     };
 
@@ -86,15 +86,14 @@ export default function AddNewProduct() {
                     />
                 )}
             </View>
-     <View style={{  alignSelf: 'center', marginTop:-25, marginBottom:20 }}>
-                {/* <Text style={styles.label}>Kuvan URL</Text> */}
+            <View style={{ alignSelf: 'center', marginTop: -25, marginBottom: 20 }}>
                 <TextInput
-                     style={[styles.input, { width: '70%' }]}
+                    style={[styles.input, { width: '70%' }]}
                     placeholder="Syötä kuvan URL"
                     value={image}
                     onChangeText={(value) => setImage(value)}
                 />
-           </View>
+            </View>
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>Tuotteen nimi *</Text>
                 <TextInput

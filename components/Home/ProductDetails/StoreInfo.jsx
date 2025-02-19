@@ -76,7 +76,7 @@ export default function StoreInfo({ product }) {
 
   const handleRemoveStore = (store) => {
     Alert.alert(
-      "Poistetaanko kauppa?",
+      "Poistetaanko kauppatiedot?",
       "Kauppa ja hinta poistetaan tietokannasta",
       [
         {

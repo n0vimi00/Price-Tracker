@@ -11,8 +11,9 @@ export default function ProductDetails() {
 
   useEffect(() => {
     navigation.setOptions({
-      headerTransparent: true,
-      headerTitle: '',
+      // headerTransparent: true,
+      // headerTitle: 'kkk',
+      headerShown: false, //
     });
   }, []);
 
@@ -29,7 +30,7 @@ export default function ProductDetails() {
             <StoreInfo product={currentProduct} />
           </>
         ) : (
-          <Text>No product selected</Text>
+          <Text>Ei valintaa</Text>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
