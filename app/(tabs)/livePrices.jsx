@@ -1,10 +1,10 @@
 import { Text, View } from "react-native";
 import React from 'react';
 
-export default function automated() {
+export default function LivePrices() {
   return (
     <View>
-      <Text>kuappalista</Text>
+      <Text>live-hinnat</Text>
     </View>
   )
 }
