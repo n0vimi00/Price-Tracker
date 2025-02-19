@@ -3,7 +3,7 @@ import React from 'react';
 import Header from "../../components/Home/Header";
 import ProductList from "../../components/Home/ProductList";
 
-export default function Home() {
+export default function ManualPrices() {
   return (
     <View style={{
         padding:20,marginTop:20

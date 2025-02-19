@@ -6,7 +6,7 @@ export default function Index() {
     <View style={{
       flex: 1,
     }}>
-      <Redirect href={'/(tabs)/home'}/>
+      <Redirect href={'/(tabs)/manualPrices'}/>
     </View>
   )
 }
